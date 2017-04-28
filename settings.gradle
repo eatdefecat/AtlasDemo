@@ -1,0 +1,1 @@
+include ':app', ':homebundle', ':loadingbundle', ':middlewarelibrary'

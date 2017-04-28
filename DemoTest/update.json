@@ -1,0 +1,23 @@
+{
+	"baseVersion":"1.1.0",
+	"updateBundles":[
+		{
+			"isMainDex":true,
+			"name":"com.taobao.maindex",
+			"version":"1.1.0@1.1.1"
+		},
+		{
+			"dependency":[],
+			"isMainDex":false,
+			"name":"com.android.homebundle",
+			"version":"1.1.0@unspecified"
+		},
+		{
+			"dependency":[],
+			"isMainDex":false,
+			"name":"com.android.loadingbundle",
+			"version":"1.1.0@unspecified"
+		}
+	],
+	"updateVersion":"1.1.1"
+}

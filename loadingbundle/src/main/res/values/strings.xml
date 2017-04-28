@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">LoadingBundle</string>
+    <string name="loading_text">已经修改loding添加图片</string>
+</resources>

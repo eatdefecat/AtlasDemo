@@ -1,0 +1,111 @@
+// 需要放最上面初始化
+group = "com.android.dzatlas"
+version = getEnvValue("versionName", "1.1.1");
+def apVersion = getEnvValue("apVersion", "");
+
+apply plugin: 'com.android.application'
+apply plugin: 'com.taobao.atlas'
+
+android {
+    compileSdkVersion 25
+    buildToolsVersion "25.0.2"
+    defaultConfig {
+        applicationId "com.android.dzatlas"
+        minSdkVersion 15
+        targetSdkVersion 25
+        versionCode 1
+        versionName version
+    }
+
+    signingConfigs {
+        debug {
+            storeFile file("atlasdemo.jks")
+            storePassword "123456"
+            keyAlias "key"
+            keyPassword "123456"
+        }
+    }
+
+    buildTypes {
+        debug {
+            minifyEnabled false
+            zipAlignEnabled true
+            signingConfig signingConfigs.debug
+        }
+    }
+}
+
+dependencies {
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+    compile 'com.android.support:appcompat-v7:25.3.1'
+    compile 'com.android.support.constraint:constraint-layout:1.0.0-alpha8'
+    compile 'com.alibaba:fastjson:1.1.45.android@jar'
+
+    compile('com.taobao.android:atlas_core:5.0.7@aar') {
+        transitive = true
+    }
+    compile 'com.taobao.android:atlasupdate:1.1.4.7@aar'
+
+    // 初次加载组件 打包进apk
+    bundleCompile project(':homebundle')
+    // 远程加载组件 不打包进apk
+    bundleCompile project(':loadingbundle')
+    // 公共方法库 宿主与组件使用
+    compile project(':middlewarelibrary')
+}
+
+atlas {
+    atlasEnabled true
+    tBuildConfig {
+        autoStartBundles = ['com.android.homebundle'] //自启动bundle配置
+        outOfApkBundles = ['loadingbundle'] //不把bundle编译进APK，在客户端使用时下载后加载
+        preLaunch = 'com.android.dzatlas.DzPreLaunch' //AppApplication启动之前调用
+    }
+    patchConfigs {
+        debug {
+            createTPatch true
+        }
+    }
+    buildTypes {
+        debug {
+            if (apVersion) {
+                // 打差异补丁 gradlew assembleDebug -DapVersion=1.1.0 -DversionName=1.1.1
+                // 对应着本地maven仓库地址 .m2/repository/com/android/dzatlas/AP-debug/1.1.4/AP-debug-1.1.4.ap
+                baseApDependency "com.android.dzatlas:AP-debug:${apVersion}@ap"
+                patchConfig patchConfigs.debug
+            }
+        }
+    }
+}
+
+String getEnvValue(key, defValue) {
+    def val = System.getProperty(key);
+    if (null != val) {
+        return val;
+    }
+    val = System.getenv(key);
+    if (null != val) {
+        return val;
+    }
+    return defValue;
+}
+
+apply plugin: 'maven'
+apply plugin: 'maven-publish'
+
+publishing {
+    // 指定仓库位置
+    repositories {
+        mavenLocal()
+    }
+    publications {
+        // 默认本地仓库地址  用户目录/.m2/repository/
+        maven(MavenPublication) {
+            //读取ap目录上传maven
+            artifact "${project.buildDir}/outputs/apk/${project.name}-debug.ap"
+            //生成本地maven目录
+            groupId group
+            artifactId "AP-debug"
+        }
+    }
+}
